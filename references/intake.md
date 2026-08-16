@@ -39,4 +39,4 @@ ASSETS     speaker avatars/photos, source images, logo — what exists, what's c
 AUDIO      original track / TTS plan (tts-forge output) / none
 ```
 
-The brief replaces the director's Phase 1 discovery — say so when handing off, so it starts at Phase 2 instead of re-interviewing.
+The brief pre-answers the director's Phase 1 discovery (its Step 1) — say so when handing off. The director still runs its own Creative Direction, Reference, and Creative Brief steps (shape), which consume the brief and flow into Phase 2.

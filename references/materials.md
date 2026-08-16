@@ -11,6 +11,8 @@ cook and whisperx live in ONE persistent shared Python environment — installed
 1. **Resolve the shared environment**, in order: a `VIDEO_TOOLS_VENV` env var (explicit override) → `~/.venvs/video-tools/` (the conventional location) → the system Python (if cook is pip-installed there). Invoke cook via that environment's absolute binary path — the agent computes the path; the user's PATH does not matter.
 2. **Upgrade before first use in a run** — idempotent, the agent's job (the user never thinks about cook's version): `pip install -U video-cook` in the shared env. A version NUMBER is the wrong check; probe the subcommands this run needs by exit code instead: `cook transcribe --help` parses = good.
 
+### Transcription run
+
 1. **Transcribe** via the `cook` CLI (`cook transcribe <root> <name>` — detaches itself, writes a pollable log, emits the en.srt). Whole file in one call — chunking breaks sentence alignment. Without the cook CLI installed, run whisperx directly with the same whole-file rule and manage backgrounding yourself. CPU large-v3 with VAD runs in the neighborhood of realtime (measure on the first run — this figure moves with the CPU) — launch it in the background and do intake meanwhile.
 2. **AV sources that are "video"**: check a few far-apart frames before assuming motion — official podcast uploads are often a single static frame plus audio, which changes the whole design (and frees you from video decode in every render).
 

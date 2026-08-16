@@ -58,7 +58,7 @@ Read `references/materials.md` for the gate protocols. Done when: every gate has
 
 ## Step 4 — Director handoff
 
-Assemble the director brief — the single artifact that carries everything intake and the gates produced. Its format is in `references/intake.md`. Then load `remotion-video-director`, enter at its Phase 2 (Scenario Design) with the brief as input, and let it own design, build, and its review loops. Stay available to answer scope-derived questions from intake answers.
+Assemble the director brief — the single artifact that carries everything intake and the gates produced. Its format is in `references/intake.md`. Then load `remotion-video-director` and hand it the brief as pre-answered Phase 1 discovery — it still runs its own Creative Direction and Creative Brief steps (the shape questions), flowing into Phase 2 and beyond. Stay available to answer scope-derived questions from intake answers.
 
 Done when: every brief field in the intake.md format is filled from intake and gate outputs, and remotion-video-director has entered Phase 2 with it.
 
