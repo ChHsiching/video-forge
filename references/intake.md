@@ -2,17 +2,17 @@
 
 How to run the six-question interview, and the director brief that comes out of it.
 
-## What you ask vs what the director asks
+## Scope questions vs shape questions
 
-Never pre-ask the director's questions — it will ask them itself in its Phase 1, and asking twice trains the user to skim. Its territory: purpose, creative audience framing, desired action, creative direction (style family), reference videos, background music, duration-within-scope.
+Shape questions are the director's (see SKILL.md's boundary) — never pre-ask them. Its shape list: purpose, creative audience framing, desired action, creative direction (style family), reference videos, background music, duration-within-scope.
 
-Your territory is everything the material and the publish plan contribute:
+Your scope-side categories:
 
 | # | Category | What to settle | Session-proven example phrasings |
 |---|---|---|---|
 | 1 | Scope | full / highlights / full + short clips | "59 分钟完整，画面随内容变化，当播客听" vs "5-10 分钟精华" |
 | 2 | Subtitles | language(s), burn-in vs soft-sub files | bilingual / Chinese-only / English-only |
-| 3 | Form | which visualization shapes THIS material supports | podcast → speaker panels + annotation cards; article → information-card flow; product page → demo walkthrough. Present 2-3 concrete variants with ASCII previews |
+| 3 | Form | which visualization forms THIS material supports | podcast → speaker panels + annotation cards; article → information-card flow; product page → demo walkthrough. Present 2-3 concrete variants with ASCII previews |
 | 4 | Audience & wording red lines | beginner vs expert; terminology handling; density preference | "观众是小白，先人话后术语，禁缩词怪词" and/or "不要空白等待，任意 N 秒窗口至少一次视觉事件" — record density as a number if given |
 | 5 | Platform & specs | which platforms, resolution/fps | decides variants (bilibili triple card? xiaohongshu cover?) and render target |
 | 6 | Voiceover | only for silent material | route choice → API key → voice audition, hand to tts-forge |

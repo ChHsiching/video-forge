@@ -15,12 +15,13 @@ Per-type processing, the review gates, and the verification mechanics.
 - Capture source metadata (author, title, URL, publish date) for attribution and later fact-checking.
 - Run a research subagent on the topic to collect verifiable facts, numbers, and proper-noun spellings BEFORE any text goes on screen. Anything the research cannot confirm from an authoritative source is UNVERIFIED — surface it to the user, never silently render it.
 
-## Translation (when subtitles are bilingual or localized)
-
-The multi-round gate, borrowed from the video-cooking experience and battle-tested on a 724-cue podcast:
+## Gate mechanics (all gates)
 
 - **Round structure**: fresh subagent reads every cue end-to-end, checks every proper noun in context (web-searching anything it questions), reports numbered defects → router fixes each by hand → new fresh subagent reruns the FULL read. Repeat until a round reports zero. Spot-checking fixed lines is not a pass; the fix itself can introduce defects.
 - **Alignment blind spot**: count-only verifiers (n cues = n lines) pass while every line is off by one. Always also compare timestamps byte-for-byte against the source SRT, and spot-read EN[N]↔ZH[N] pairs at intervals.
+
+## Translation (when subtitles are bilingual or localized)
+
 - **Terminology**: ecosystem vocabulary the audience would look up stays in English (skill names, tool names, system terms like `spec`/`agent`/`ticket`); everyday words translate. When a term is both (e.g. a tool's tickets vs generic tickets), keep the ecosystem term English and gloss it in Chinese at first mention.
 - **Cue boundaries**: commands, shortcuts, product names are atomic — never split across cues. Chinese follows Chinese sentence boundaries, not the English cue grid.
 
