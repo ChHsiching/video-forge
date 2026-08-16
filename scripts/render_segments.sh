@@ -71,7 +71,7 @@ bash "$SKILL_DIR/scripts/check_segments.sh" "$DIR" || {
 
 : > "$DIR/concat.txt"
 for i in $(seq 0 $((SEGMENTS - 1))); do
-  echo "file '$DIR/seg_$(printf '%03d' $i).mp4'" >> "$DIR/concat.txt"
+  echo "file 'seg_$(printf '%03d' $i).mp4'" >> "$DIR/concat.txt"
 done
 ffmpeg -y -v error -f concat -safe 0 -i "$DIR/concat.txt" -c copy "$OUT"
 echo "RENDER_DONE $OUT $(date +%H:%M:%S)"

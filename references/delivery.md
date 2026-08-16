@@ -6,7 +6,7 @@ Render strategy, covers, platform variants, publish copy. These are defaults —
 
 Always render a cheap check version first and have the user confirm content:
 
-- 540p (scale 0.5) renders ≈4× faster than 1080p — good enough to read every card and subtitle. (360p is not an option: one-third scale is not an integer multiple and the renderer rejects it.)
+- 540p (scale 0.5) renders ~2× faster than 1080p in practice — per-frame overhead dominates at small sizes, so the 4× pixel ratio does not translate 1:1. (360p via scale is not an option: a decimal third (0.3333×1080 = 359.964) lands on a fractional height and the renderer rejects non-integer dimensions — stick to 0.5/0.75, or build an actual 360p composition.)
 - Only after the user confirms content: final render. At 4K, `remotion-4k-polish` owns the path choice — read it before rendering.
 
 ## Long-video render strategy (anything over ~15 minutes)
@@ -14,7 +14,7 @@ Always render a cheap check version first and have the user confirm content:
 - **Segmented rendering**: split into N frame-exact segments (each an independent encode), render sequentially or in 2-3 parallel instance queues , concat with stream copy. Zero quality loss: same encoder settings per segment, no re-encode at the join.
 - **Resume**: segments already on disk are skipped — a crashed run costs only the in-flight segment.
 - Before concat, run `remotion-4k-polish`'s integrity check (or `scripts/check_segments.sh`) on every segment.
-- **Parallelism ceiling**: one render instance caps at ~4 cores (the screenshot pipeline is single-threaded); scale by adding instances, not tabs-per-instance, and watch RAM (~6-8GB per instance).
+- **Parallelism ceiling**: a single render instance saturates around 3-4 cores regardless of --concurrency; scale by adding instances (2-3 queues), and watch RAM (~6-8GB per instance).
 
 ## Ending & completion rate
 
