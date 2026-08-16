@@ -4,7 +4,7 @@ How to run the six-question interview, and the director brief that comes out of 
 
 ## Scope questions vs shape questions
 
-Shape questions are the director's (see SKILL.md's boundary) — never pre-ask them. Its shape questions are its own Phase 1 list — do not mirror it here.
+Shape questions are the director's (see SKILL.md's boundary) — they live in its Phase 1 list; never pre-ask or mirror them here.
 
 Your scope-side categories:
 

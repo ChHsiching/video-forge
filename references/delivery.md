@@ -15,11 +15,10 @@ Always render a cheap check version first and have the user confirm content:
 
 1. Probe: logical CPU count and FREE RAM (not total — a "cleaned" machine frees twice the queues).
 2. Calibrate on the first render: an instance saturates ~3-4 cores regardless of `--concurrency` (architectural), but its RAM scales with output resolution (~6-8GB at 4K, less at 1080p) — measure one running instance, then compute `queues = min(floor(cores/4), floor(free_ram_gb / measured_instance_gb), remaining_segment_count)`. Two remaining segments means two queues; a third lane has nothing to render.
-3. Stagger queue starts ~40s (process-spawn spikes collide otherwise).
 
 - **Segmented rendering**: split into N frame-exact segments (each an independent encode), render sequentially or in 2-3 parallel instance queues, concat with stream copy. Zero quality loss: same encoder settings per segment, no re-encode at the join.
 - **Resume**: segments already on disk are skipped — a crashed run costs only the in-flight segment.
-- Before concat, run `remotion-4k-polish`'s integrity check (or `scripts/check_segments.sh`) on every segment.
+- `render_segments.sh` gates concat on the integrity check itself; a hand-driven segment run needs `scripts/check_segments.sh` first.
 
 ## Ending & completion rate
 

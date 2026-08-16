@@ -18,7 +18,7 @@ Every decision in this pipeline belongs to exactly one side:
 - **Scope is yours** — which part of the material becomes the video: full length vs highlights vs full-plus-clips, subtitle language, the visualization form the material supports, audience wording level, platform targets. `remotion-video-director` assumes the video's shape is already decided when it starts.
 - **Shape is the director's** — creative direction, pacing, music, look, scene design: how the decided scope is executed. It asks these itself; pre-asking them in your interview steals its job and bores the user with duplicate questions.
 
-When the director's Phase 1 asks "duration constraints", feed it the scope answers from intake — never re-open them.
+If the director probes scope anyway (e.g. duration constraints), answer from intake — never re-ask the user.
 
 ## Step 0 — Probe dependencies
 
