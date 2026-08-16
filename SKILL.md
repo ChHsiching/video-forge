@@ -28,7 +28,7 @@ Check these skills are discoverable (by their descriptions being present):
 - `remotion-4k-polish` — required before any 4K final render. Point the user to install if missing.
 - `tts-forge` — required only when material has no audio track and the user wants voiceover.
 
-Tools (binaries, not skills — probe like ffmpeg): the `cook` CLI (`pip install video-cook[all]`) is the transcription executor for AV material; without it, fall back to whisperx directly (works, but you hand-roll detach/log-polling).
+Tools (binaries, not skills — probe like ffmpeg): the `cook` CLI is the transcription executor for AV material. Resolve its shared environment and upgrade it before first use (protocol in `references/materials.md` — "Transcription environment"); without it, fall back to whisperx directly (works, but you hand-roll detach/log-polling).
 
 Done when: remotion-video-director is discoverable (or its install command was given), 4K/tts availability is known, and for AV material the cook CLI is present (or the whisperx fallback is chosen).
 
