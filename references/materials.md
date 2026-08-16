@@ -5,9 +5,7 @@ Per-type processing, the review gates, and the verification mechanics.
 ## Audio / video material
 
 1. **Transcribe** with the whisperx pipeline (`cook transcribe` if the video-cook CLI is installed, else whisperx directly). Whole file in one call — chunking breaks sentence alignment. CPU large-v3 runs ~0.5-0.7× realtime; launch it in the background and do intake meanwhile.
-2. **Speaker timeline** — no diarization needed at first pass: map turns by reading the transcript (host asks, guest explains); hand-annotate a coarse speaker segment list. For avatar-highlight visuals, ±5s accuracy reads fine.
-3. **Envelope data** (only if the chosen form includes meters/waveforms) — extract per-100ms RMS and calibrate in dB against the material's own speech percentiles (map p25..p95 onto 0..1). A fixed gain multiplier saturates the meter and viewers see "it doesn't follow the voice".
-4. **AV sources that are "video"**: check a few far-apart frames before assuming motion — official podcast uploads are often a single static frame plus audio, which changes the whole design (and frees you from video decode in every render).
+2. **AV sources that are "video"**: check a few far-apart frames before assuming motion — official podcast uploads are often a single static frame plus audio, which changes the whole design (and frees you from video decode in every render).
 
 ## URL / article material
 

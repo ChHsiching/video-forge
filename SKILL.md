@@ -36,7 +36,7 @@ Dispatch by what the user handed you, then read `references/materials.md` before
 
 | Material | First moves |
 |---|---|
-| Audio / video file | Transcribe (whisperx pipeline), then speaker timeline + envelope data |
+| Audio / video file | Transcribe (whisperx pipeline) — whole file, one call |
 | URL (page / article / post) | Fetch content; JS-rendered pages need a real-browser bridge; capture source metadata |
 | Images | Inventory as supplementary assets (avatars, references) — an image set alone is rarely a video's sole content; confirm intent in intake |
 
