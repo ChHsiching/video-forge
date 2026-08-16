@@ -24,6 +24,9 @@ cook and whisperx live in ONE persistent shared Python environment — installed
 
 - **Round structure**: fresh subagent reads every cue end-to-end, checks every proper noun in context (web-searching anything it questions), reports numbered defects → router fixes each by hand → new fresh subagent reruns the FULL read. Repeat until a round reports zero. Spot-checking fixed lines is not a pass; the fix itself can introduce defects.
 - **Alignment blind spot**: count-only verifiers (n cues = n lines) pass while every line is off by one. Always also compare timestamps byte-for-byte against the source SRT, and spot-read EN[N]↔ZH[N] pairs at intervals.
+- **Silence hallucinations**: a tiny-duration cue landing on silent audio is a hallucination — check the cue's window against the audio energy (RMS near zero) before trusting or deleting it, then delete and renumber; a hallucinated cue poisons translation counts and every downstream alignment check.
+- **Real-word mishears**: proper-noun web checks miss real-word substitutions (split "pains"→"panes", "their IDs"→"IDEs", a product name heard as a common word) — reviewers read each cue against its topic context, and when the speaker later self-corrects or re-mentions the term, that later cue is the confirmation source.
+- **Fix log discipline**: log every fix as `<ASR output> → <correct form> — how confirmed` (glossary / official page / web / context), and keep an explicit checked-keeps list (speaker coinages, spoken forms that differ from show notes) — without it, later review rounds "fix" deliberate forms back into errors.
 
 ## Terminology gate (all on-screen text; translation follows when subtitles are bilingual)
 
@@ -38,12 +41,13 @@ One dedicated pass over subtitles, cards, covers, and publish copy hunting:
 - translated-English constructions (inverted negation, "arrive at a term", adverb-fronted praise)
 - stock LLM phrasing, filler transitions, lists of exactly three
 - card text relying on auto-wrap — break lines at semantic units instead
+- vague quantifiers ("很多问题", "数十万") where the verified fact is a specific number — substituting the verified figure is part of this pass
 
 Run it as its own fresh-subagent round with a keep-English glossary attached (so it flags real issues, not approved terms), then hand-fix line by line.
 
 ## Fact verification checklist
 
-Every number, claim, name, and quote destined for the screen gets cross-checked against an authoritative source (official repo, primary article, the author's own docs). Verified facts carry their source; the rest are UNVERIFIED. The storyboard stage should only use the verified list.
+Every number, claim, name, and quote destined for the screen gets cross-checked against an authoritative source (official repo, primary article, the author's own docs). Verified facts carry their source; the rest are UNVERIFIED. Fast-moving numbers (stars, installs) change between recording and publish — when both values appear on screen, stamp each with its as-of date so the card can't read as a contradiction. The storyboard stage should only use the verified list.
 
 ## Images
 

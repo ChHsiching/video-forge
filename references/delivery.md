@@ -44,3 +44,4 @@ Per-platform deliverable, written after the video is final (facts on screen are 
 - **Chapters**: platform field versions respect their current limits (historically bilibili ≤10, xiaohongshu ≤15) with short names, plus one full descriptive list for a pinned comment.
 - Plain text only inside paste blocks — platforms render markdown literally; bullets use `·`, never `-`.
 - Verify counts with `len()` against each platform's counting rule before handing over.
+- **Character-capped platforms**: where the description field can't hold the five-part structure, deliver a short body plus a pinned-comment variant (≤300 chars by that platform's own counting) carrying the source links and the subtitle credit line.
