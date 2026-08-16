@@ -11,10 +11,15 @@ Always render a cheap check version first and have the user confirm content:
 
 ## Long-video render strategy (anything over ~15 minutes)
 
+**Maximize parallelism to the actual hardware — measure, then compute, never accept a default queue count:**
+
+1. Probe: logical CPU count and FREE RAM (not total — a "cleaned" machine frees twice the queues).
+2. From session-measured constants — one render instance saturates ~3-4 cores and ~6-8GB RAM regardless of `--concurrency` — compute `queues = min(floor(cores/4), floor(free_ram_gb/7), remaining_segment_count)`. Two remaining segments means two queues; a third lane has nothing to render.
+3. Stagger queue starts ~40s (process-spawn spikes collide otherwise).
+
 - **Segmented rendering**: split into N frame-exact segments (each an independent encode), render sequentially or in 2-3 parallel instance queues , concat with stream copy. Zero quality loss: same encoder settings per segment, no re-encode at the join.
 - **Resume**: segments already on disk are skipped — a crashed run costs only the in-flight segment.
 - Before concat, run `remotion-4k-polish`'s integrity check (or `scripts/check_segments.sh`) on every segment.
-- **Parallelism ceiling**: a single render instance saturates around 3-4 cores regardless of --concurrency; scale by adding instances (2-3 queues), and watch RAM (~6-8GB per instance).
 
 ## Ending & completion rate
 

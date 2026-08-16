@@ -14,17 +14,25 @@
 set -eu
 ENTRY="${1:?entry}"; COMP="${2:?composition id}"; TOTAL="${3:?total frames}"; OUT="${4:?out.mp4}"
 shift 4
-SEGMENTS=12; QUEUES=2; CONCURRENCY=8
+SEGMENTS=12; QUEUES=auto; CONCURRENCY=8
 while [ $# -gt 0 ]; do
   case "$1" in
     --segments) SEGMENTS="$2"; shift 2 ;;
-    --queues) QUEUES="$2"; shift 2 ;;
+    --queues) QUEUES="$2"; shift 2 ;;  # or auto: computed from measured cores+free RAM
     --concurrency) CONCURRENCY="$2"; shift 2 ;;
     --) shift; break ;;
     *) echo "unknown arg: $1" >&2; exit 2 ;;
   esac
 done
 EXTRA="$*"
+if [ "$QUEUES" = "auto" ]; then
+  CORES=$(python -c "import os; print(os.cpu_count() or 4)")
+  FREE_GB=$(python -c "import ctypes" 2>/dev/null && powershell -NoProfile -Command "[math]::Round((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1MB)" 2>/dev/null || echo 8)
+  QUEUES=$(( CORES / 4 )); [ $((FREE_GB / 7)) -lt $QUEUES ] && QUEUES=$((FREE_GB / 7))
+  [ "$QUEUES" -lt 1 ] && QUEUES=1
+  [ "$QUEUES" -gt "$SEGMENTS" ] && QUEUES=$SEGMENTS
+  echo "auto queues: $QUEUES (cores=$CORES free_ram=${FREE_GB}GB)"
+fi
 SEGMENTS=$(( SEGMENTS < TOTAL ? SEGMENTS : TOTAL ))
 SEG=$(( (TOTAL + SEGMENTS - 1) / SEGMENTS ))
 OUT="${OUT//\\//}"; ENTRY="${ENTRY//\\//}"
