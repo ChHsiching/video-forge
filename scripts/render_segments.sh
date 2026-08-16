@@ -25,7 +25,9 @@ while [ $# -gt 0 ]; do
   esac
 done
 EXTRA="$*"
+SEGMENTS=$(( SEGMENTS < TOTAL ? SEGMENTS : TOTAL ))
 SEG=$(( (TOTAL + SEGMENTS - 1) / SEGMENTS ))
+OUT="${OUT//\\//}"; ENTRY="${ENTRY//\\//}"
 DIR="$(dirname "$OUT")/segments"
 SKILL_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 mkdir -p "$DIR"
@@ -34,7 +36,9 @@ render_one() {
   local i=$1
   local A=$((i * SEG)); local B=$(((i + 1) * SEG - 1)); [ $B -ge $TOTAL ] && B=$((TOTAL - 1))
   local F="$DIR/seg_$(printf '%03d' $i).mp4"
-  [ -s "$F" ] && { echo "skip seg$i"; return 0; }
+  if [ -s "$F" ] && ffprobe -v error -show_entries format=duration -of csv=p=0 "$F" >/dev/null 2>&1; then
+    echo "skip seg$i"; return 0
+  fi
   echo "start seg$i [$A-$B] $(date +%H:%M:%S)"
   npx remotion render "$ENTRY" "$COMP" "$F" --codec=h264 $EXTRA \
     --concurrency=$CONCURRENCY --frames=$A-$B \
@@ -44,7 +48,8 @@ render_one() {
 }
 
 # split segments round-robin into per-queue lists, staggered starts
-LISTS=$(seq 0 $((SEGMENTS - 1)) | awk -v q=$QUEUES '{ print >> ("'"$DIR"'/q" (NR % q) ".list") }')
+rm -f "$DIR"/q*.list
+seq 0 $((SEGMENTS - 1)) | awk -v q=$QUEUES -v d="$DIR" '{ print > (d "/q" (NR % q) ".list") }' 
 pids=()
 for q in $(seq 0 $((QUEUES - 1))); do
   (
@@ -53,13 +58,15 @@ for q in $(seq 0 $((QUEUES - 1))); do
   ) &
   pids+=($!)
 done
-for p in "${pids[@]}"; do wait "$p"; done
+FAIL=0
+for p in "${pids[@]}"; do wait "$p" || { echo "queue pid $p FAILED"; FAIL=1; }; done
 rm -f "$DIR"/q*.list
+[ "$FAIL" = "1" ] && { echo "render queues failed — fix and re-run (completed segments are kept)"; exit 1; }
 
 # integrity gate before concat — refuses broken segments
-bash "$SKILL_DIR/scripts/check_segments.sh" "$DIR" >/dev/null || {
-  echo "integrity check failed — re-run this script after fixing segments above" >&2
-  bash "$SKILL_DIR/scripts/check_segments.sh" "$DIR"; exit 1
+bash "$SKILL_DIR/scripts/check_segments.sh" "$DIR" || {
+  echo "integrity check failed — delete the broken segments listed above, then re-run this script" >&2
+  exit 1
 }
 
 : > "$DIR/concat.txt"

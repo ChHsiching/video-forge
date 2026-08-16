@@ -60,6 +60,8 @@ def main():
             result.append({"s": s, "e": e, "zh": zh, "en": en} if args.bilingual
                           else {"s": s, "e": e, "text": text})
 
+    if not result:
+        sys.exit("no cues parsed — check the input SRT")
     json.dump(result, open(args.output, "w", encoding="utf-8"), ensure_ascii=False)
     # verification summary — read it before handing the file to the renderer
     print(f"cues: {len(result)}  first: {result[0]['s']}s  last: {result[-1]['e']}s")

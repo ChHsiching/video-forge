@@ -34,11 +34,11 @@ Done when: remotion-video-director is discoverable (or its install command was g
 
 Dispatch by what the user handed you, then read `references/materials.md` before processing:
 
-| Material | First moves |
+| Material | Dispatch |
 |---|---|
-| Audio / video file | Transcribe (whisperx pipeline) — whole file, one call |
-| URL (page / article / post) | Fetch content; JS-rendered pages need a real-browser bridge; capture source metadata |
-| Images | Inventory as supplementary assets (avatars, references) — an image set alone is rarely a video's sole content; confirm intent in intake |
+| Audio / video file | transcription pipeline |
+| URL (page / article / post) | fetch pipeline |
+| Images | asset inventory (processing per materials.md) |
 
 Done when: a usable content source exists on disk (transcript, article text, or asset inventory) plus source metadata (author, URL, title — where the source has any) for attribution.
 
@@ -60,6 +60,15 @@ Assemble the director brief — the single artifact that carries everything inta
 
 Done when: every brief field in the intake.md format is filled from intake and gate outputs, and remotion-video-director has entered Phase 2 with it.
 
+## Step 5 — Delivery
+
+These are defaults you do, not questions you ask:
+
+- **Check render** → user confirmation → **final render** (4K: read `remotion-4k-polish` first; long videos: `scripts/render_segments.sh`).
+- **Covers**, **platform variants**, **publish copy** — mechanics in delivery.md.
+
+Read `references/delivery.md` before delivering. Done when: deliverables + covers + publish copy are on disk, ffprobe specs match the intake answers, and the ending frames of every variant have been spot-checked.
+
 ## Bundled scripts
 
 Deterministic helpers under `scripts/` — run them instead of re-deriving the code (each bakes in a debugged-once pitfall):
@@ -67,15 +76,3 @@ Deterministic helpers under `scripts/` — run them instead of re-deriving the c
 - `scripts/srt_to_json.py` — SRT → Remotion subtitle JSON (bilingual split + count/first/last verification)
 - `scripts/render_segments.sh` — segmented parallel render driver: resume, stagger, retry, integrity gate before concat
 - `scripts/check_segments.sh` — post-kill moov/duration audit for any segment directory
-
-## Step 5 — Delivery
-
-These are defaults you do, not questions you ask:
-
-- **Check render** — 540p, user confirms content, then the final render.
-- **Final render** — at 4K, read `remotion-4k-polish` now; for long videos run `scripts/render_segments.sh`.
-- **Covers** — one per ratio the intake platforms imply, each its own layout, large type only.
-- **Platform variants** — e.g. the bilibili triple card as a composition props variant; endings stay tight for completion rate.
-- **Publish copy** — per-platform titles, five-part description, chapters.
-
-Read `references/delivery.md` before delivering. Done when: deliverables + covers + publish copy are on disk, ffprobe specs match the intake answers, and the ending frames of every variant have been spot-checked.

@@ -11,15 +11,15 @@ Always render a cheap check version first and have the user confirm content:
 
 ## Long-video render strategy (anything over ~15 minutes)
 
-- **Segmented rendering**: split into N frame-exact segments (each an independent encode), render sequentially or in 2-3 parallel instance queues (stagger starts ~40s so process-spawn spikes don't collide), concat with stream copy. Zero quality loss: same encoder settings per segment, no re-encode at the join.
+- **Segmented rendering**: split into N frame-exact segments (each an independent encode), render sequentially or in 2-3 parallel instance queues , concat with stream copy. Zero quality loss: same encoder settings per segment, no re-encode at the join.
 - **Resume**: segments already on disk are skipped — a crashed run costs only the in-flight segment.
-- **Integrity check before concat** — mandatory after any force-kill: run `remotion-4k-polish`'s integrity check (or `scripts/check_segments.sh`) on every segment and re-render the broken ones.
+- Before concat, run `remotion-4k-polish`'s integrity check (or `scripts/check_segments.sh`) on every segment.
 - **Parallelism ceiling**: one render instance caps at ~4 cores (the screenshot pipeline is single-threaded); scale by adding instances, not tabs-per-instance, and watch RAM (~6-8GB per instance).
 
 ## Ending & completion rate
 
 - Endings stay tight: the video ends when the music ends — fade the audio out over the outro and cut. Silent tails cost completion rate.
-- Outro sequence budget: single-digit seconds per card; a "$ logout"-style sign-off needs ~3-4s total, never 15.
+- Outro sequence budget: single-digit seconds per card; a sign-off card needs ~3-4s total, never 15.
 - Platform variant cards (e.g. bilibili triple-action) render as a **composition props variant** inserted before the outro — the variant is part of the timeline with native transitions. File-level concat of a separately rendered tail produces sample-rate mismatches and hard cuts; a props variant makes both versions from one codebase.
 
 ## Covers

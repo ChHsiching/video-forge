@@ -10,8 +10,10 @@ set -u
 DIR="${1:?usage: check_segments.sh <dir> [expected-duration]}"
 EXPECT="${2:-}"
 BROKEN=0
+FOUND=0
 for f in "$DIR"/seg_*.mp4; do
   [ -e "$f" ] || continue
+  FOUND=$((FOUND + 1))
   d=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$f" 2>&1 | head -1)
   case "$d" in
     ''|*[!0-9.]*) echo "BROKEN (no moov): $f"; BROKEN=1 ;;
@@ -22,4 +24,5 @@ for f in "$DIR"/seg_*.mp4; do
       fi ;;
   esac
 done
-[ "$BROKEN" = "0" ] && echo "all segments healthy" || exit 1
+[ "$FOUND" = "0" ] && { echo "no segments found in $DIR"; exit 1; }
+[ "$BROKEN" = "0" ] && echo "all $FOUND segments healthy" || exit 1
