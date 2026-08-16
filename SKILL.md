@@ -65,7 +65,6 @@ Done when: every brief field in the intake.md format is filled from intake and g
 Deterministic helpers under `scripts/` — run them instead of re-deriving the code (each bakes in a debugged-once pitfall):
 
 - `scripts/srt_to_json.py` — SRT → Remotion subtitle JSON (bilingual split + count/first/last verification)
-- `scripts/audio_envelope.py` — audio → 100ms loudness envelope, dB-calibrated against the material's own percentiles
 - `scripts/render_segments.sh` — segmented parallel render driver: resume, stagger, retry, integrity gate before concat
 - `scripts/check_segments.sh` — post-kill moov/duration audit for any segment directory
 
