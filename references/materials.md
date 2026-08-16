@@ -4,7 +4,7 @@ Per-type processing, the review gates, and the verification mechanics.
 
 ## Audio / video material
 
-1. **Transcribe** with the whisperx pipeline (`cook transcribe` if the video-cook CLI is installed, else whisperx directly). Whole file in one call — chunking breaks sentence alignment. CPU large-v3 with VAD runs ≈1.3× realtime (a 1-hour episode transcribes in ~45 min) — launch it in the background and do intake meanwhile.
+1. **Transcribe** via the `cook` CLI (`cook transcribe <root> <name>` — detaches itself, writes a pollable log, emits the en.srt). Whole file in one call — chunking breaks sentence alignment. Without the cook CLI installed, run whisperx directly with the same whole-file rule and manage backgrounding yourself. CPU large-v3 with VAD runs ≈1.3× realtime (a 1-hour episode transcribes in ~45 min) — launch it in the background and do intake meanwhile.
 2. **AV sources that are "video"**: check a few far-apart frames before assuming motion — official podcast uploads are often a single static frame plus audio, which changes the whole design (and frees you from video decode in every render).
 
 ## URL / article material
