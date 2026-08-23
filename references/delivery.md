@@ -1,12 +1,70 @@
 # Delivery playbook
 
-Mechanics for render gates, timing, verification, audio, covers, platform variants, and publish copy. These are defaults — do them, and mention them, rather than asking. The gate order and the hard delivery checklist live in SKILL.md Step 5; this file explains how each item is executed.
+Mechanics for the delivery gates, timing, verification, audio, covers, platform variants, and publish copy. These are defaults — do them, and mention them, rather than asking. The gate names and the advance-blocking rule live in SKILL.md Step 5; this file carries each gate's **check command**. Every gate is judged by running its command and reading the output against stated numbers — a downstream "done" or a self-assessed pass never clears a gate; only the check does. On a failed check, fix and re-run the whole gate.
 
-## Render gates (mechanics)
+## G1 — stills approval
 
-- **Gate 1, stills**: one still per distinct layout/asset state (not per scene), presented as a labeled sheet. Approves content and assets.
-- **Gate 2, cheap full render with audio**: 1080p, or 540p (scale 0.5) for long videos — roughly 2× faster than 1080p in practice, because per-frame overhead dominates at small sizes. (360p via scale is not an option: a decimal third of 1080 lands on a fractional height and the renderer rejects non-integer dimensions — stick to 0.5/0.75.) Approves content and timing.
-- **Gate 3, final render**: at 4K, `remotion-4k-polish` owns the path choice — read it before rendering.
+Render one still per distinct layout/asset state (not per scene), present as a labeled sheet, and get the user's explicit go. The gate clears on the user's approval — record it; silence is not approval, and G2's render command is not issued before it.
+
+## G2 — cheap full render with audio
+
+Render the full video at 1080p **with the final audio mix in place** (540p for long videos — see the scale note below). Two checks, in order:
+
+1. **Spec check** (machine):
+   ```
+   ffprobe -v error -show_entries stream=width,height,avg_frame_rate -show_entries format=duration -of default=noprint_wrappers=1 <video>
+   ```
+   Dimensions, fps, and duration match the intake answers and the generated timing table.
+2. **User check**: the user watches and approves content and timing.
+
+(540p via scale 0.5 is ~2× faster than 1080p — per-frame overhead dominates. 360p via scale is not an option: a decimal third of 1080 lands on a fractional height and the renderer rejects non-integer dimensions — stick to 0.5/0.75.)
+
+## G3 — content gates on the cheap render
+
+All three run on the G2 file — content truth lives in the rendered file (a stale bundle renders stills fine while the video breaks, so stills alone never clear content). All must report clean before G4; fixes are cheap here. Threshold heuristics lose to the pixel diff and neutral reads: textured or sparse layouts that defeat a brightness check get resolved by G3c, not by relaxing the gate.
+
+**G3a — audio mix** (targets in the loudness section below):
+```
+ffmpeg -i <video> -af ebur128 -f null NUL          # whole file → integrated + true peak
+ffmpeg -ss <speech-window> -t 5 -i <video> -af ebur128 -f null NUL
+ffmpeg -ss <music-only-window> -t 3 -i <video> -af ebur128 -f null NUL
+```
+Read `I:` and `Max True Peak:` against the targets. (On macOS/Linux use `-f null -`; `NUL` is the Windows spelling.)
+
+**G3b — blank-scene sweep**: per scene, diff the 85%-through frame against the faded-out final frame:
+```python
+# <video> <scenes.json: [{"start":F,"dur":F},...] → prints per-scene mean abs diff; any ≤3 flags empty
+import json,subprocess,sys
+from PIL import Image,ImageStat
+v,scenes=sys.argv[1],json.load(open(sys.argv[2]))
+for s in scenes:
+    fs=[]
+    for f in (int(s["start"]+s["dur"]*0.85), s["start"]+s["dur"]-2):
+        subprocess.run(["ffmpeg","-y","-v","error","-i",v,"-vf",f"select=eq(n\\,{f})","-frames:v","1",f"tmp{f}.png"])
+        fs.append(Image.open(f"tmp{f}.png").convert("L"))
+    d=sum(abs(a-b) for a,b in zip(fs[0].getdata(),fs[1].getdata()))/(fs[0].width*fs[0].height)
+    print(s["start"],round(d,2),"EMPTY" if d<=3 else "ok")
+```
+Any scene flagged EMPTY fails the gate. (The scenes list is the generated timing table — same source of truth.)
+
+**G3c — neutral content reads**: vision-model reads of extracted frames use neutral prompts (describe what is present). Deep-dark or sparse layouts that defeat G3b's threshold get resolved here, not by relaxing the gate.
+
+## G4 — final render + artifacts
+
+Render final (4K: read `remotion-4k-polish` first; long videos: `scripts/render_segments.sh` + `check_segments.sh`), then each artifact's check:
+
+**Covers** — per required ratio, dimensions verified:
+```python
+from PIL import Image; import sys
+for p in sys.argv[1:]: im=Image.open(p); print(p, im.size, "OK" if im.width>=1920 else "TOO SMALL")
+```
+Existence + size per the intake platform list; which ratios and the design rules live in the Covers section below.
+
+**Publish copy** — section presence and every length rule, by `len()` against each platform's counting rule (format rules in the publish-copy section below): titles within limits, three description versions present, four chapter versions present, chapter names ≤11 chars, `HH:MM:SS` format, chapter counts ≤10 (bilibili) / ≤15 (xiaohongshu), xiaohongshu body ≤100, pinned comment ≤300.
+
+**Ending** — extract the final frame and one ~3s before it; the final frame is the sign-off card (not black), the card is ≤2s, hard cut.
+
+**Output directory purity** — `ls` the output directory; it contains deliverables and nothing else (no logs, temp stills, partial renders).
 
 ## Audio-first timing (narrated videos)
 
@@ -20,16 +78,7 @@ When narration is TTS and intake settled the timing authority as audio-first (th
    - caption spans per scene: detect speech pauses (`ffmpeg silencedetect` at −32dB, ≥0.16s), place each cue boundary at the pause nearest its character-proportional estimate (fall back to the estimate when no pause within 0.7s), convert to frames
 4. Scenes and captions consume the generated tables. Proportional rescaling of caption times desyncs against real speech pacing — re-anchor to pauses instead.
 
-## Verification protocol
-
-Content truth lives in the rendered file: a stale bundle renders stills fine while the video breaks, so stills alone never clear a delivery.
-
-- Verify from the rendered MP4: extract frames and judge those.
-- Blank-scene sweep: per scene, diff the 85%-through frame against the faded-out final frame — a near-zero diff means the scene renders empty. This one pass catches the whole "content invisible" bug class.
-- Neutral vision prompts: ask what is present, never state the expected content — leading prompts get confident hallucinated confirmations.
-- Textured or sparse layouts defeat mean-brightness checks; trust the pixel diff and neutral reads over threshold heuristics.
-
-## Audio mix baseline
+## Audio mix baseline (G3a targets)
 
 bilibili transcodes without loudness normalization — what you upload is what viewers hear; YouTube pulls down toward about −14 LUFS and never boosts. Targets for narration-led video:
 

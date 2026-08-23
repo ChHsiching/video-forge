@@ -65,25 +65,14 @@ Done when: every brief field in the intake.md format is filled from intake and g
 
 ## Step 5 — Delivery
 
-These are defaults you do, not questions you ask. Mechanics in `references/delivery.md` — read it before delivering.
+These are defaults you do, not questions you ask. Delivery runs as **four named gates in order — the run does not advance past a gate until it clears** (fix, then re-run the full gate; spot-checking the fixed item is not a pass). Each gate's exact check commands live in `references/delivery.md` — read it before delivering.
 
-**Render gates, in order — each gate approved before the next begins:**
+- **G1 — stills approval**: every distinct layout/asset state as a labeled stills sheet; the user approves content and assets.
+- **G2 — cheap full render with audio** (1080p; 540p for long videos): spec check passes (ffprobe vs intake answers), then the user approves content and timing.
+- **G3 — content gates on the cheap render**: audio mix within loudness targets (ebur128 three-window), blank-scene sweep clean (85%-frame pixel diff), neutral-vision reads clean. All zero-defect — this is where fixes are cheap.
+- **G4 — final render + artifacts**: 4K render (read `remotion-4k-polish` first; long videos: `scripts/render_segments.sh`), covers verified per ratio, publish copy complete and length-checked, ending spot-checked, output directory holds deliverables only.
 
-1. **Stills approval** — every distinct layout/asset state as stills; the user approves content and assets.
-2. **Cheap full render with audio** (1080p, or 540p for long videos) — the user approves content and timing.
-3. **Final render** (4K: read `remotion-4k-polish` first; long videos: `scripts/render_segments.sh`).
-
-**Delivery checklist — all hard, all checked before "done":**
-
-- Covers: one per platform ratio (bilibili needs 16:9 **and** 4:3; the 4:3 is its own layout), final pick made from 3-4 concept-different variants
-- Platform variants rendered per the intake platform list (e.g. bilibili triple-action card)
-- Publish copy complete: per-platform titles, three description versions, four chapter versions — format rules in delivery.md
-- Audio mix verified: integrated −16±1 LUFS, true peak ≤ −1 dBTP, bed 12-18 dB under the voice (loudness section in delivery.md)
-- Content verification passed on rendered-file frame extracts (verification protocol in delivery.md)
-- Ending per delivery.md: sign-off card ≤2s, hard cut to the end, no fade-to-black tail
-- The output directory holds deliverables only
-
-Done when: every checklist item is checked, ffprobe specs match the intake answers, and the ending frames of every variant have been spot-checked.
+Done when: G1–G4 have each cleared in order, ffprobe specs match the intake answers, and the ending frames of every variant have been spot-checked. A gate skipped is the run not done — the next render command is not issued until the current gate reports clear.
 
 ## Bundled scripts
 
