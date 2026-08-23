@@ -1,6 +1,6 @@
 # Delivery playbook
 
-Mechanics for the delivery gates, timing, verification, audio, covers, platform variants, and publish copy. These are defaults — do them, and mention them, rather than asking. The gate names and the advance-blocking rule live in SKILL.md Step 5; this file carries each gate's **check command**. Every gate is judged by running its command and reading the output against stated numbers — a downstream "done" or a self-assessed pass never clears a gate; only the check does. On a failed check, fix and re-run the whole gate.
+Mechanics for the delivery gates, timing, verification, audio, covers, platform variants, and publish copy. These are defaults — do them, and mention them, rather than asking. The gate names and the advance-blocking rule live in SKILL.md Step 5; this file carries each gate's **checks** (a pinned command where the check is mechanical, a defined procedure where it is a user approval or a vision read). Every gate is judged by running its check and reading the result against stated numbers — a downstream "done" or a self-assessed pass never clears a gate; only the check does.
 
 ## G1 — stills approval
 
@@ -8,7 +8,7 @@ Render one still per distinct layout/asset state (not per scene), present as a l
 
 ## G2 — cheap full render with audio
 
-Render the full video at 1080p **with the final audio mix in place** (540p for long videos — see the scale note below). Two checks, in order:
+Render the full video at 1080p **with the final audio mix in place** — G3a's loudness check reads the real mix, so a silent or scratch-audio draft makes the whole of G3 meaningless. (1080p rather than 540p because G3b's diff threshold and G3c's vision reads are calibrated at full pixels; 540p halves the diffs and blurs the reads. Use 540p only for long videos where 1080p is too slow — see the scale note below.) Two checks, in order:
 
 1. **Spec check** (machine):
    ```
@@ -21,13 +21,13 @@ Render the full video at 1080p **with the final audio mix in place** (540p for l
 
 ## G3 — content gates on the cheap render
 
-All three run on the G2 file — content truth lives in the rendered file (a stale bundle renders stills fine while the video breaks, so stills alone never clear content). All must report clean before G4; fixes are cheap here. Threshold heuristics lose to the pixel diff and neutral reads: textured or sparse layouts that defeat a brightness check get resolved by G3c, not by relaxing the gate.
+All three run on the G2 file — content truth lives in the rendered file (a stale bundle renders stills fine while the video breaks, so stills alone never clear content). Fixes are cheapest here. Threshold heuristics lose to the pixel diff and neutral reads: textured or sparse layouts that defeat a brightness check get resolved by G3c, not by relaxing the gate.
 
 **G3a — audio mix** (targets in the loudness section below):
 ```
 ffmpeg -i <video> -af ebur128=peak=true -f null NUL      # whole file → integrated + true peak
-ffmpeg -ss <speech-window> -t 5 -i <video> -af ebur128=peak=true -f null NUL
-ffmpeg -ss <music-only-window> -t 3 -i <video> -af ebur128=peak=true -f null NUL
+ffmpeg -ss 47 -t 5 -i <video> -af ebur128=peak=true -f null NUL      # a speech window (seconds)
+ffmpeg -ss 1 -t 3 -i <video> -af ebur128=peak=true -f null NUL       # a music-only window (seconds)
 ```
 Read the summary's `I:` (integrated) and `True peak: Peak:` against the targets — true peak needs `peak=true`; the default ebur128 run omits it entirely. (On macOS/Linux use `-f null -`; `NUL` is the Windows spelling.)
 
@@ -39,15 +39,15 @@ from PIL import Image
 v,scenes=sys.argv[1],json.load(open(sys.argv[2]))
 for s in scenes:
     fs=[]
-    for f in (int(s["start"]+s["dur"]*0.85), s["start"]+s["dur"]-2):
+    for f in (int(s["start"] + s["dur"] * 0.85), int(s["start"] + s["dur"]) - 2):
         subprocess.run(["ffmpeg","-y","-v","error","-i",v,"-vf",f"select=eq(n\\,{f})","-frames:v","1",f"tmp{f}.png"])
         fs.append(Image.open(f"tmp{f}.png").convert("L"))
     d=sum(abs(a-b) for a,b in zip(fs[0].getdata(),fs[1].getdata()))/(fs[0].width*fs[0].height)
     print(s["start"],round(d,2),"EMPTY" if d<=3 else "ok")
 ```
-Any scene flagged EMPTY fails the gate. (The scenes list is the generated timing table — same source of truth.)
+Any scene flagged EMPTY fails the gate. (The scenes list is the generated timing table — same source of truth. Threshold provenance, measured on a real render: content scenes diff 3.6-4.2, empty/black scenes 0.0-1.3, sparse dark end-cards 1.3-2.5 — the gray zone is exactly what G3c arbitrates.)
 
-**G3c — neutral content reads**: vision-model reads of extracted frames use neutral prompts (describe what is present). Deep-dark or sparse layouts that defeat G3b's threshold get resolved here, not by relaxing the gate.
+**G3c — neutral content reads**: vision-model reads of extracted frames use neutral prompts (describe what is present). A read fails when the description reports blank or black content, or content contradicting what the timing table places at that frame; it passes when the description names the scene's actual content. Deep-dark or sparse layouts that defeat G3b's threshold get resolved here, not by relaxing the gate.
 
 ## G4 — final render + artifacts
 
@@ -55,14 +55,20 @@ Render final (4K: read `remotion-4k-polish` first; long videos: `scripts/render_
 
 **Covers** — per required ratio, dimensions verified:
 ```python
+# args: cover files → aspect must be ~16:9 or ~4:3 at ≥1080 height (a 1440-wide 4:3 cover is compliant)
 from PIL import Image; import sys
-for p in sys.argv[1:]: im=Image.open(p); print(p, im.size, "OK" if im.width>=1920 else "TOO SMALL")
+for p in sys.argv[1:]:
+    im = Image.open(p); ar = im.width / im.height
+    ok = im.height >= 1080 and (abs(ar - 16/9) < 0.02 or abs(ar - 4/3) < 0.02)
+    print(p, im.size, "OK" if ok else "BAD RATIO OR TOO SMALL")
 ```
 Existence + size per the intake platform list; which ratios and the design rules live in the Covers section below.
 
-**Publish copy** — section presence and every length rule, by `len()` against each platform's counting rule (format rules in the publish-copy section below): titles within limits, three description versions present, four chapter versions present, chapter names ≤11 chars, `HH:MM:SS` format, chapter counts ≤10 (bilibili) / ≤15 (xiaohongshu), xiaohongshu body ≤100, pinned comment ≤300.
+**Platform variants** — every variant the intake platform list requires is rendered and passes the same G2 spec check (dimensions/fps/duration against its target).
 
-**Ending** — extract the final frame and one ~3s before it; the final frame is the sign-off card (not black), the card is ≤2s, hard cut.
+**Publish copy** — section presence and every length rule, by `len()` against each platform's counting rule; the limits live in the publish-copy section below (titles within limits, three description versions present, four chapter versions present).
+
+**Ending** — extract the final frame and one ~3s before it (`ffmpeg -sseof -3 -i <video> -frames:v 1 end.png`); the final frame is the sign-off card (not black), and if the ~3s frame already shows the card, the card exceeds its budget (Ending section).
 
 **Output directory purity** — `ls` the output directory; it contains deliverables and nothing else (no logs, temp stills, partial renders).
 
@@ -132,6 +138,8 @@ Per-platform deliverable, written after the video is final (facts on screen are 
 - **bilibili**: professional, ~30 chars, telling the viewer what happens in the video (e.g. "从零搭建一个全新项目"), with the author's identity when recognizable. A title the viewer needs the description to understand is the wrong title.
 - **xiaohongshu**: ≤20 chars, same professional tone, zero marketing language ("大佬带你", "效率翻倍").
 - **YouTube**: may carry "(双语字幕)" or the English title variant.
+
+The ~30s are style targets, not platform caps — the bilibili cap is far higher (historically 80). Verify the live cap when a title wants to run long; never assume the shorter.
 
 **Description — three versions:**
 

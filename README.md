@@ -8,7 +8,7 @@ The workflow was forged on real productions (a 59-minute podcast → 4K60 annota
 
 ## Install
 
-Skills — install all five lines; video-forge dispatches to the others by name at runtime:
+Skills — install all six lines; video-forge dispatches to the others by name at runtime:
 
 ```bash
 npx skills add BayramAnnakov/remotion-video-director   # required — the build engine
@@ -16,6 +16,7 @@ npx skills add remotion-dev/skills                     # required — official R
 npx skills add ChHsiching/video-forge
 npx skills add ChHsiching/remotion-4k-polish           # required for 4K finals — text/line quality
 npx skills add ChHsiching/tts-forge                    # required when silent material needs a voice
+npx skills add https://github.com/petergyang/no-ai-slop --skill no-ai-slop   # AI-flavor gate's pattern axis (falls back to an inline list when missing)
 ```
 
 Tools (binaries, probed at runtime): `ffmpeg` on PATH; the `cook` CLI (`pip install video-cook[all]`) for AV transcription — whisperx-direct works without it, you just manage backgrounding yourself.
