@@ -147,7 +147,7 @@ The ~30s are style targets, not platform caps — the bilibili cap is far higher
    - 定调句 (1-2 sentences): author + what they did + one-sentence value — "X 用 Y 做了 Z", never "来自 X 的讲解".
    - 看点 (numbered): hooks with a teaser, not a table of contents — each item carries suspense, not a flat fact.
    - 关键内容 (`·` list): key beats as "label: content" pairs — a scannable index, easier than a flat list.
-   - 来源 (`·` list): `来源：` / `· 作者：` / `· 原视频：` / `· 网站/仓库：` — structured, never inline.
+   - 来源 (`·` list): `来源：` / `· 作者：` / `· 原视频：` / `· 网站/仓库：` / `· 时间：<video date, e.g. 2026.8.23>` — structured, never inline; the date line goes last.
    - 结尾话术 (verbatim): `字幕：AI 辅助转录 + 翻译并经人工校对。如有不准确之处，欢迎指出。` — for original-narration videos (no translation), the honest adaptation: `字幕与口播：AI 辅助制作并经人工校对。如有不准确之处，欢迎指出。`
 2. **xiaohongshu pinned comment (≤300 chars, every character counted as the platform counts)**: the first three paragraphs compressed plus the closing note. Leave out 看点, 关键内容, and links — they eat the budget. Verify with `len()`; compress until it fits.
 3. **xiaohongshu body (≤100 chars)**: one sentence — who published what, the core topic, why watch. No metadata ("双语字幕" belongs in the pinned comment). Verify with `len()`.
