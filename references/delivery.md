@@ -12,7 +12,7 @@ Render the full video at 1080p **with the final audio mix in place** (540p for l
 
 1. **Spec check** (machine):
    ```
-   ffprobe -v error -show_entries stream=width,height,avg_frame_rate -show_entries format=duration -of default=noprint_wrappers=1 <video>
+   ffprobe -v error -select_streams v:0 -show_entries stream=width,height,avg_frame_rate -show_entries format=duration -of default=noprint_wrappers=1 <video>
    ```
    Dimensions, fps, and duration match the intake answers and the generated timing table.
 2. **User check**: the user watches and approves content and timing.
@@ -25,17 +25,17 @@ All three run on the G2 file — content truth lives in the rendered file (a sta
 
 **G3a — audio mix** (targets in the loudness section below):
 ```
-ffmpeg -i <video> -af ebur128 -f null NUL          # whole file → integrated + true peak
-ffmpeg -ss <speech-window> -t 5 -i <video> -af ebur128 -f null NUL
-ffmpeg -ss <music-only-window> -t 3 -i <video> -af ebur128 -f null NUL
+ffmpeg -i <video> -af ebur128=peak=true -f null NUL      # whole file → integrated + true peak
+ffmpeg -ss <speech-window> -t 5 -i <video> -af ebur128=peak=true -f null NUL
+ffmpeg -ss <music-only-window> -t 3 -i <video> -af ebur128=peak=true -f null NUL
 ```
-Read `I:` and `Max True Peak:` against the targets. (On macOS/Linux use `-f null -`; `NUL` is the Windows spelling.)
+Read the summary's `I:` (integrated) and `True peak: Peak:` against the targets — true peak needs `peak=true`; the default ebur128 run omits it entirely. (On macOS/Linux use `-f null -`; `NUL` is the Windows spelling.)
 
 **G3b — blank-scene sweep**: per scene, diff the 85%-through frame against the faded-out final frame:
 ```python
 # <video> <scenes.json: [{"start":F,"dur":F},...] → prints per-scene mean abs diff; any ≤3 flags empty
 import json,subprocess,sys
-from PIL import Image,ImageStat
+from PIL import Image
 v,scenes=sys.argv[1],json.load(open(sys.argv[2]))
 for s in scenes:
     fs=[]
