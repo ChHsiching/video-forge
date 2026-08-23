@@ -129,7 +129,7 @@ bilibili transcodes without loudness normalization — what you upload is what v
 
 ## Publish copy
 
-Per-platform deliverable, written after the video is final (facts on screen are then frozen). Full spec below — kept in sync with video-subtitle's SKILL.md Step 6 (same rules maintained there for cook runs; when either changes, change both).
+Per-platform deliverable, written after the video is final (facts on screen are then frozen). Full spec below — this file owns the spec.
 
 **Plain text inside paste blocks.** Platforms render markdown literally: `**bold**` shows as asterisks, `-` markers show as hyphens. The upload.md file may use markdown for its own sections; the fenced paste-block content is plain text with line breaks, list items as `·` or `1. 2. 3.`.
 
